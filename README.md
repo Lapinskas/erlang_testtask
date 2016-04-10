@@ -4,40 +4,43 @@ Test task for erlang
 ============
 How to check:
 
-0. PREREQUISITES
-- Erlang and rebar are installed
-- I'm using my keys for AWS, key will be removed after the tests
-- DynamoDB has been set us with the table "data" using "key" (string) as primary key and "value" (string) as a field.
+1. PREREQUISITES
 
-1. GET CODE
-git clone https://github.com/Lapinskas/erlang_testtask.git
-cd erlang_testtask
+Erlang and rebar are installed
 
-2. GET DEPS
-make deps
+I'm using my keys for AWS, key will be removed after the tests
 
-3. COMPILE
-make all
+DynamoDB has been set us with the table "data" using "key" (string) as primary key and "value" (string) as a field.
 
-4. LOAD KEYS
-source priv/access.keys
+2. GET CODE
+$ git clone https://github.com/Lapinskas/erlang_testtask.git
+$ cd erlang_testtask
 
-5. RUN SERVER
-make server
+3. GET DEPS
+$ make deps
 
-6. RUN CLIENT
->> on another terminal from project folder
-make test
+4. COMPILE
+$ make all
 
-7. TEST
+5. LOAD KEYS
+$ source priv/access.keys
 
-7.1 Create record
+6. RUN SERVER
+$ make server
+
+7. RUN CLIENT
+( on another terminal from project folder )
+$ make test
+
+8. TEST
+
+8.1 Create record
 
     1> test_client:test_set("ABC","123").
     Test set: ok
     ok
     
-7.2 Get record
+8.2 Get record
 
     2> test_client:test_get("ABC").      
     Test get: ok
@@ -45,7 +48,7 @@ make test
     Test Value: "123"
     ok
 
-7.3 Use wrong key
+8.3 Use wrong key to get record
     
     3> test_client:test_get("Abc").
     Test get: not_found
