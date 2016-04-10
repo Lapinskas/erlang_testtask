@@ -47,8 +47,8 @@ handle_info({tcp_closed, Socket}, State=#state{sock=Socket}) ->
     {stop, normal, State};
 handle_info({tcp_error, Socket, _Reason}, State=#state{sock=Socket}) ->
     {stop, normal, State};
+
 handle_info({tcp, _Sock, MsgData}, State=#state{sock=Socket}) ->
-%    Msg = decode(list_to_binary(MsgData)),
     case process_message(MsgData, State) of
         {pause, NewState} ->
             ok;
@@ -77,16 +77,15 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% ===================================================================
 
 process_message(MsgData, State) ->
+
     case gpb:type(MsgData) of
 	set_request -> 
 	    {Key,Value}	= gpb:decode(set_request,MsgData),
 	    Pkt 	= gpb:encode(set_response,ok);
 	get_request-> 
 	    Key		= gpb:decode(get_request,MsgData),
-	    Pkt 	= gpb:encode(get_response,ok,"name","Vladas Lapinskas")
+	    Pkt 	= gpb:encode(get_response,ok,Key,"Vladas")
     end,
     gen_tcp:send(State#state.sock, Pkt),
     State.
-
-
 

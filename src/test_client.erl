@@ -35,7 +35,7 @@ test_get(Key) ->
 	    io:format("Test Value: ~p~n", [Value]);
 
 	{Res} ->
-	    io:format("Test get: ~p~n", Res)
+	    io:format("Test get: ~p~n", [Res])
     end.
 
 %%% Helper Functions %%%

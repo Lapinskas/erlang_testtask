@@ -9,9 +9,14 @@ compile:
 clean:
 	rebar clean
 
-run:
+server:
 	erl \
-	  -name rpc_demo@127.0.0.1 \
-	  -setcookie rpc_demo \
+	  -name test_task@127.0.0.1 \
+	  -setcookie test_task \
 	  -pa ebin deps/*/ebin \
-	  -eval "application:start(rpc_demo)"
+	  -eval "application:start(test_task)"
+test:
+	erl \
+	  -pa ebin deps/*/ebin \
+	  test_client.beam
+	  

@@ -38,8 +38,3 @@ init([]) ->
             permanent, 5000, worker, [protobuff_server_listener]}
     ],
     {ok, { {one_for_one, 5, 10}, Children}}.
-
-dispatch() ->
-    [
-        {["sequence", n]}
-    ].
