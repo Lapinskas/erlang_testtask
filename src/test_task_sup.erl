@@ -30,6 +30,8 @@ init([]) ->
     application:start(inets),
     application:start(sasl),
     application:start(os_mon),
+    ssl:start(),
+    erlcloud:start(),
 
     Children = [
         {protobuff_server_sup, {protobuff_server_sup, start_link, []},

@@ -19,4 +19,3 @@ test:
 	erl \
 	  -pa ebin deps/*/ebin \
 	  test_client.beam
-	  

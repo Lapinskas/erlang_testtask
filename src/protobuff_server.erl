@@ -81,10 +81,22 @@ process_message(MsgData, State) ->
     case gpb:type(MsgData) of
 	set_request -> 
 	    {Key,Value}	= gpb:decode(set_request,MsgData),
-	    Pkt 	= gpb:encode(set_response,ok);
+	    case erlcloud_ddb2:put_item(<<"data">>,[{<<"key">>,Key},{<<"value">>,Value}],[]) of
+		{ok,[]} ->
+			Pkt = gpb:encode(set_response,ok);
+		{error,_} ->
+			Pkt = gpb:encode(set_response,internal)
+	    end;
 	get_request-> 
 	    Key		= gpb:decode(get_request,MsgData),
-	    Pkt 	= gpb:encode(get_response,ok,Key,"Vladas")
+	    case erlcloud_ddb2:get_item(<<"data">>,{<<"key">>,Key}) of
+		{ok,[{<<"value">>,DynamoValue},{<<"key">>,DynamoKey}]} ->
+			Pkt = gpb:encode(get_response,ok,[DynamoKey],[DynamoValue]);
+		{ok,[]} ->
+			Pkt = gpb:encode(get_response,not_found);
+		{error,_} ->
+			Pkt = gpb:encode(get_response,internal)
+	    end
     end,
     gen_tcp:send(State#state.sock, Pkt),
     State.
