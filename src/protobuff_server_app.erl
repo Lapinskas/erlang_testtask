@@ -2,7 +2,7 @@
 %% Copyright (c) 2011 Rusty Klophaus (@rustyio)
 %% See MIT-LICENSE for licensing information.
 
--module(test_task_app).
+-module(protobuff_server_app).
 
 -behaviour(application).
 
@@ -17,7 +17,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    test_task_sup:start_link().
+    protobuff_server_sup:start_link().
 
 stop(_State) ->
     ok.
