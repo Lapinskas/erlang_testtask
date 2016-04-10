@@ -13,24 +13,30 @@ I'm using my keys for AWS, key will be removed after the tests
 DynamoDB has been set us with the table "data" using "key" (string) as primary key and "value" (string) as a field.
 
 2. GET CODE
-$ git clone https://github.com/Lapinskas/erlang_testtask.git
-$ cd erlang_testtask
+
+$> git clone https://github.com/Lapinskas/erlang_testtask.git
+$> cd erlang_testtask
 
 3. GET DEPS
-$ make deps
+
+$> make deps
 
 4. COMPILE
-$ make all
+
+$> make all
 
 5. LOAD KEYS
-$ source priv/access.keys
+
+$> source priv/access.keys
 
 6. RUN SERVER
-$ make server
+
+$> make server
 
 7. RUN CLIENT
 ( on another terminal from project folder )
-$ make test
+
+$> make test
 
 8. TEST
 
