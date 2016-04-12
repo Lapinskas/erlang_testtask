@@ -5,22 +5,26 @@
 -export([
         encrypt/1,
 	decrypt/1,
-	chunks/2
+	chunks/2,
+	check_result/1
 	]).
 
 encrypt (Data) ->
-    KEYID = os:getenv("AWS_ENCRYPT_KEY_ID"),
-    Base64 = base64:encode_to_string(Data),
-    case erlcloud_kms:encrypt(list_to_binary([KEYID]),list_to_binary(Base64)) of
-	{ok,[
-	    {_,Cipher},
-	    _
-	]} ->
-	{ok,Cipher};
-
-	{error,Reason} ->
-	    {error,Reason,{keyid,KEYID}}
-	
+    KEYID 	= os:getenv("AWS_ENCRYPT_KEY_ID"),
+    Base64 	= base64:encode_to_string(Data),
+    Chunks 	= chunks(Base64,2),
+    Chipher	= lists:map (
+		    fun(X) -> 
+			erlcloud_kms:encrypt(
+			    list_to_binary([KEYID]),
+			    list_to_binary(X))
+		    end,
+		    Chunks),
+    case check_result(Chipher) of
+	true ->
+	    {ok,Chipher};
+	false ->
+	    {error,{keyid,KEYID}}
     end.
 
 decrypt (Cipher) ->
@@ -35,6 +39,19 @@ decrypt (Cipher) ->
 	    {error,Reason}
 	
     end.
+
+% Helper functions
+
+check_result (Res) ->
+    lists:all(
+	fun(X) ->
+	    case X of 
+		{ok,_} -> true; 
+		_Else -> false
+	    end
+	end,
+	Res
+    ).
 
 chunks([],_) -> [];
 
