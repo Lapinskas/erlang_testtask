@@ -81,17 +81,34 @@ process_message(MsgData, State) ->
     case gpb:type(MsgData) of
 	set_request -> 
 	    {Key,Value}	= gpb:decode(set_request,MsgData),
-	    case erlcloud_ddb2:put_item(<<"data">>,[{<<"key">>,Key},{<<"value">>,Value}],[]) of
-		{ok,[]} ->
-			Pkt = gpb:encode(set_response,ok);
-		{error,_} ->
-			Pkt = gpb:encode(set_response,internal)
+	    Chipher = encryption:encrypt(Value),
+	    case  Chipher of 
+		{ok,_} ->
+		    %Ser = term_to_binary(Chipher),
+		    Ser = lists:flatten(io_lib:format("~p",[Chipher])),
+		    case erlcloud_ddb2:put_item(<<"data">>,[{<<"key">>,Key},{<<"value">>,[Ser]},{<<"len">>,<<"0">>}],[]) of
+			{ok,[]} ->
+				Pkt = gpb:encode(set_response,ok);
+			{error,_} ->
+			        Pkt = gpb:encode(set_response,internal)
+		    end;
+		_Else ->
+		    		Pkt = gpb:encode(set_response,internal)
 	    end;
 	get_request-> 
 	    Key		= gpb:decode(get_request,MsgData),
 	    case erlcloud_ddb2:get_item(<<"data">>,{<<"key">>,Key}) of
-		{ok,[{<<"value">>,DynamoValue},{<<"key">>,DynamoKey}]} ->
-			Pkt = gpb:encode(get_response,ok,[DynamoKey],[DynamoValue]);
+		{ok,[{<<"len">>,DynamoLen},{<<"value">>,DynamoValue},{<<"key">>,DynamoKey}]} ->
+%			Ser = binary_to_term(DynamoValue),
+			Ser = DynamoValue,
+			Q = {ok,Ser},
+%			case encryption:decrypt(Ser) of 
+			case Q of 
+			    {ok,Dec} ->
+				Pkt = gpb:encode(get_response,ok,[DynamoKey],[Dec]);
+			    _Else ->
+				Pkt = gpb:encode(get_response,internal)
+			end;
 		{ok,[]} ->
 			Pkt = gpb:encode(get_response,not_found);
 		{error,_} ->
