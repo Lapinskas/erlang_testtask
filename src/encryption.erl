@@ -152,3 +152,4 @@ chunks(List,Len) when Len > length(List) ->
 chunks(List,Len) ->
     {Head,Tail} = lists:split(Len,List),
     [Head | chunks(Tail,Len)].
+    

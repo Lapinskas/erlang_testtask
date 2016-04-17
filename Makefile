@@ -15,7 +15,7 @@ server:
 	  -setcookie test_task \
 	  -pa ebin deps/*/ebin \
 	  -eval "application:start(test_task)"
-test:
+client:
 	erl \
 	  -pa ebin deps/*/ebin \
 	  test_client.beam
