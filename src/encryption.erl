@@ -2,56 +2,73 @@
 
 -module(encryption).
 
--define(CHUNKSIZE,1000).
+-define(CHUNKSIZE,2).
 
 -export([
-        encrypt/1,
-	decrypt/1,
+	enc/1,
+	dec/1,
+        encrypt64/1,
+	decrypt64/1,
 	chunks/2,
 	check_result/1,
-	check_dec_result/1
+	get_result/1
 	]).
 
-encrypt (Data) ->
-    KEYID 	= os:getenv("AWS_ENCRYPT_KEY_ID"),
-    Hex 	= hex:bin_to_hexstr(list_to_binary(Data)),
-    Chunks 	= chunks(Hex,?CHUNKSIZE),
+enc(Data) ->
+    Chunks 	= chunks(Data,?CHUNKSIZE),
     Chipher	= lists:map (
 		    fun(X) -> 
-			Len = string:len(X),
-			{Res,Enc} = 
-			    erlcloud_kms:encrypt(
-				list_to_binary([KEYID]),
-				list_to_binary(X)),
-			{Res,Len,Enc}
+			    encrypt64(X)
 		    end,
 		    Chunks),
     case check_result(Chipher) of
 	true ->
-	    {ok,encrypt_result(Chipher)};
+	    {ok,get_result(Chipher)};
 	false ->
-	    {error,{keyid,KEYID}}
+	    {error}
     end.
 
-decrypt (Chipher) ->
+dec (Chipher) ->
     Chunks = lists:map (
 		    fun(X) ->
-			{Len,Enc} = X,
-			Data = erlcloud_kms:decrypt(list_to_binary([Enc])),
-			{Len,Data}
+			decrypt64(X)
 		    end,
 		    Chipher),
-    case check_dec_result(Chunks) of
+    case check_result(Chunks) of
 	true ->
-	    Hex = 
-		hex:hexstr_to_bin(
-			lists:flatten(
-			    decrypt_result(Chunks)
-			)
+	    Res = 
+		lists:flatten(
+		    get_result(Chunks)
 		),
-	    {ok,Hex};
+	    {ok,Res};
 	false->
 	    {error}
+    end.
+
+encrypt64 (Data) ->
+    KEYID   = os:getenv("AWS_ENCRYPT_KEY_ID"),
+    Data64 = base64:encode(Data),
+    case erlcloud_kms:encrypt(
+	    list_to_binary([KEYID]),
+	    list_to_binary([Data64])
+	) of
+	    {ok,Result} ->
+		[{_,Chipher},_] = Result,
+		{ok,Chipher};
+	    _Else ->
+		{error,{orig,Data}}
+    end.
+
+decrypt64 (Chipher) ->
+    case erlcloud_kms:decrypt(
+    	    list_to_binary([Chipher])
+	) of
+	    {ok,Result} ->
+		[_,{_,Plain64}] = Result,
+		Plain = base64:decode(Plain64),
+		{ok,binary_to_list(Plain)};
+	    _Else ->
+		{error}
     end.
 
 % Helper functions
@@ -60,49 +77,24 @@ check_result (Res) ->
     lists:all(
 	fun(X) ->
 	    case X of 
-		{ok,_,_} -> true; 
+		{ok,_} -> true; 
 		_Else -> false
 	    end
 	end,
 	Res
     ).
 
-check_dec_result (Res) ->
-    lists:all(
-	fun(X) ->
-	    case X of 
-		{_,{ok,_}} -> true; 
-		_Else -> false
-	    end
-	end,
-	Res
-    ).
-
-encrypt_result (Res) ->
+get_result (Res) ->
     lists:map(
 	fun(X) ->
 	    case X of 
-		{ok,Len,[{_,Data},_]} 
-		    -> {Len,Data};
+		{ok,Data} 
+		    -> Data;
 		_Else -> ""
 	    end
 	end,
 	Res
     ).
-
-decrypt_result (Res) ->
-    lists:map(
-	fun(X) ->
-	    case X of 
-		{Len,{ok,[_,{_,Data}]}} -> 
-		    SData = binary_to_list(Data),
-		    string:left(SData,Len);
-		_Else -> ""
-	    end
-	end,
-	Res
-    ).
-
 
 chunks([],_) -> [];
 

@@ -81,12 +81,12 @@ process_message(MsgData, State) ->
     case gpb:type(MsgData) of
 	set_request -> 
 	    {Key,Value}	= gpb:decode(set_request,MsgData),
-	    Chipher = encryption:encrypt(Value),
+	    Chipher = encryption:enc(Value),
 	    case  Chipher of 
-		{ok,_} ->
-		    %Ser = term_to_binary(Chipher),
-		    Ser = lists:flatten(io_lib:format("~p",[Chipher])),
-		    case erlcloud_ddb2:put_item(<<"data">>,[{<<"key">>,Key},{<<"value">>,[Ser]},{<<"len">>,<<"0">>}],[]) of
+		{ok,Res} ->
+		    Ser = term_to_binary(Res),
+		    Hex = hex:bin_to_hexstr(Ser),
+		    case erlcloud_ddb2:put_item(<<"data">>,[{<<"key">>,Key},{<<"value">>,Hex}],[]) of
 			{ok,[]} ->
 				Pkt = gpb:encode(set_response,ok);
 			{error,_} ->
@@ -98,12 +98,10 @@ process_message(MsgData, State) ->
 	get_request-> 
 	    Key		= gpb:decode(get_request,MsgData),
 	    case erlcloud_ddb2:get_item(<<"data">>,{<<"key">>,Key}) of
-		{ok,[{<<"len">>,DynamoLen},{<<"value">>,DynamoValue},{<<"key">>,DynamoKey}]} ->
-%			Ser = binary_to_term(DynamoValue),
-			Ser = DynamoValue,
-			Q = {ok,Ser},
-%			case encryption:decrypt(Ser) of 
-			case Q of 
+		{ok,[{<<"value">>,DynamoValue},{<<"key">>,DynamoKey}]} ->
+			Hex = hex:hexstr_to_bin(binary_to_list(DynamoValue)),
+			Ser = binary_to_term(Hex),
+			case encryption:dec(Ser) of 
 			    {ok,Dec} ->
 				Pkt = gpb:encode(get_response,ok,[DynamoKey],[Dec]);
 			    _Else ->

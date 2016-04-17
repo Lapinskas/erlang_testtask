@@ -1,26 +1,30 @@
-%% Copyright (c) 2016 Vladas Lapinskas (vlad.lapinskas@gmail.com)
-
 -module(test_encryption).
 
 -export([
-        test/1,
-	get_random_string/1,
-	get_random_string/2
-	]).
+    test/1,
+    test_iterations/1
+    ]).
 
-test(Length) ->
-    Random = get_random_string(Length),
-    {ok,Enc} = encryption:encrypt(Random),
-    {ok,Dec} = encryption:decrypt(Enc),
-    string:equal(Random,binary_to_list(Dec)).
+test_iterations(N) ->
+    case N of
+	0 -> io:fwrite("Test finished~n");
+	_ ->
+	    {{_,Result},_,_} = test(random_string(2000)),
+	    io:fwrite("Test iteration ~p~n", [{N, Result}]),
+	    test_iterations(N-1)
+    end.
 
-get_random_string(Length) ->
-    get_random_string(Length,
-    "qwertyuiop[]asdfghjkl;zxcvbnm,./1234567890\n\r\b\t\0\1\2\3\4\5\6\7\8").
+test(Data) ->
+    {ok,Chipher} = encryption:enc(Data),
+    {ok,Plain} = encryption:dec(Chipher),
+    {
+	{"test passed:",string:equal(Data,Plain)},
+	{"original text:",Data},
+	{"text after encryption/decryption operations:",Plain}
+    }.
 
-get_random_string(Length, AllowedChars) ->
-    lists:foldl(fun(_, Acc) ->
-                        [lists:nth(random:uniform(length(AllowedChars)),
-                                   AllowedChars)]
-                            ++ Acc
-                end, [], lists:seq(1, Length)).
+random_string(Len) ->
+    Chrs = list_to_tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 !@#$%^&*()_+=-,.<>\;'|:'\"`\0\1\2\3\4\5\6\7\8\9\n\r"),
+    ChrsSize = size(Chrs),
+    F = fun(_, R) -> [element(random:uniform(ChrsSize), Chrs) | R] end,
+    lists:foldl(F, "", lists:seq(1, Len)).
