@@ -1,5 +1,8 @@
-%% Erlang RPC Demo
+%% Copyright (c) 2016 Vladas Lapinskas (vlad.lapinskas@gmail.com)
+%%
+%% Based on Erlang RPC Demo
 %% Copyright (c) 2011 Rusty Klophaus (@rustyio)
+%%
 %% See MIT-LICENSE for licensing information.
 
 -module(protobuff_server_sup).

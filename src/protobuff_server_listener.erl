@@ -1,9 +1,15 @@
-%% Erlang RPC Demo
+%% Copyright (c) 2016 Vladas Lapinskas (vlad.lapinskas@gmail.com)
+%%
+%% Based on Erlang RPC Demo
 %% Copyright (c) 2011 Rusty Klophaus (@rustyio)
+%%
 %% See MIT-LICENSE for licensing information.
 
 -module(protobuff_server_listener).
 -behavior(gen_nb_server).
+
+% Port number for the protobuff server
+-define(PORTNUMBER,8000).
 
 -export([start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -13,7 +19,7 @@
 
 start_link() ->
     IP = "0.0.0.0",
-    Port = 8000,
+    Port = ?PORTNUMBER,
     gen_nb_server:start_link(?MODULE, IP, Port, [Port]).
 
 init([PortNum]) ->

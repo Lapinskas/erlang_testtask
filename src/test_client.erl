@@ -6,10 +6,30 @@
 %% See MIT-LICENSE for licensing information.
 
 -module(test_client).
+
+% ========== TEST CLIENT ===========================================
+%
+% Test client to test functionality of Protocol Buffer Server
+%
+% PREREQUISITES:
+% - protobuff server is running on localhost on 8000 port
+%
+% Example:
+%	1> test_client:set("key1","This is a test value for key1").
+%	Test set: ok
+%	ok
+%	2> test_client:get("key1").
+%	Test get: ok
+%	Test Key: "key1"
+%	Test Value: "This is a test value for key1"
+%	ok
+%
+% ==================================================================
+
 -export([
 	    start/0,
-	    test_set/2,
-	    test_get/1
+	    set/2,
+	    get/1
         ]).
 
 -include("kv_pb.hrl").
@@ -18,13 +38,13 @@ start() ->
     application:start(inets),
     inets:start(httpc, [{profile, default}]).
 
-test_set(Key,Value) ->
+set(Key,Value) ->
     Request = gpb:encode(set_request,Key,Value),
     {ok, Response} = pb_call("localhost", 8000, Request),
     Result = gpb:decode(set_response,Response),
     io:fwrite("Test set: ~s~n", [Result]).
 
-test_get(Key) ->
+get(Key) ->
     Request = gpb:encode(get_request,Key),
     {ok, Response} = pb_call("localhost", 8000, Request),
     Result = gpb:decode(get_response,Response),

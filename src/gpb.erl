@@ -9,7 +9,7 @@
 
 % ================ Google Protocol Buffers kv.proto API ===============================================================================
 %
-% Reference: kv.proto file
+% Protocol buffers description: kv.proto file
 %
 % "encode" functions return Google Protocol Buffer row data
 % encode(set_request,	Key,Value)		=> Key:Value strings pair
@@ -18,7 +18,7 @@
 % encode(get_response,	Result) 		=> Result enum {ok,not_found,internal}
 % encode(get_response,	Result,Key,Value)	=> Result enum {ok,not_found,internal} + Key:Value
 %
-% "decode" and "type" function get row Google Protocol Buffer data and decode it
+% "decode" and "type" functions to get row Google Protocol Buffer data and decode it
 % decode(Data) 					=> universal decoder, returns decoded structure
 % decode(set_request,	Data)			=> returns {Key,Value} tulip
 % decode(set_response,	Data)			=> returns Result enum {ok, internal}
@@ -57,7 +57,7 @@ encode(set_request,Key,Value) ->
 		    undefined,
 		    undefined
 		}).
-		
+
 encode(set_response,Result) ->
     kv_pb:encode({
 		    req_envelope,
